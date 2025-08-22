@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io"
+	"os"
+	"strconv"
+	"strings"
 )
 
 // TODO: Реализуйте структуры:
@@ -41,7 +45,18 @@ func (w *Weapon) GetWeight() float64 {
 }
 
 func (w *Weapon) Serialize(writer io.Writer) {
-	fmt.Fprintf(writer, "%s,%d,%d\n", w.Name, w.Damage, w.Durability)
+	fmt.Fprintf(writer, "Weapon|%s,%d,%d\n", w.Name, w.Damage, w.Durability)
+}
+
+func (w *Weapon) Deserialize(r io.Reader) {
+	scanner := bufio.NewScanner(r)
+	if scanner.Scan() {
+		fileContent := scanner.Text()
+		parts := strings.Split(fileContent, "|")
+		w.Name = parts[1]
+		w.Damage, _ = strconv.Atoi(parts[2])
+		w.Durability, _ = strconv.Atoi(parts[3])
+	}
 }
 
 type Armor struct {
@@ -61,6 +76,21 @@ func (a *Armor) GetName() string {
 
 func (a *Armor) GetWeight() float64 {
 	return a.Weight
+}
+
+func (a *Armor) Serialize(writer io.Writer) {
+	fmt.Fprintf(writer, "Armor|%s|%d|%.2f\n", a.Name, a.Defense, a.Weight)
+}
+
+func (a *Armor) Deserialize(r io.Reader) {
+	scanner := bufio.NewScanner(r)
+	if scanner.Scan() {
+		fileContent := scanner.Text()
+		parts := strings.Split(fileContent, "|")
+		a.Name = parts[1]
+		a.Defense, _ = strconv.Atoi(parts[2])
+		a.Weight, _ = strconv.ParseFloat(parts[3], 64)
+	}
 }
 
 const PotionWeight float64 = 15
@@ -104,7 +134,7 @@ func DescribeItem(i Item) string {
 		fmt.Println("Предмет отсутствует")
 		return "Предмет отсутствует"
 	}
-	return fmt.Sprintf("%s (вес: %f)", i.GetName(), i.GetWeight())
+	return fmt.Sprintf("%s (вес: %.2f)", i.GetName(), i.GetWeight())
 }
 
 func Filter[T any](items []T, predicate func(T) bool) []T {
@@ -200,16 +230,46 @@ type Storable interface {
 
 func (inv *Inventory) Save(w io.Writer) {
 	// TODO: Бонус: сделайте сохранение/загрузку инвентаря в/из файла
+	for _, item := range inv.Items {
+		switch t := item.(type) {
+		case *Weapon:
+			t.Serialize(w)
+		case *Armor:
+			t.Serialize(w)
+		}
+	}
 }
 
 func (inv *Inventory) Load(r io.Reader) {
-	// TODO: Бонус: сделайте сохранение/загрузку инвентаря в/из файла
+	scanner := bufio.NewScanner(r)
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, "|")
+		switch parts[0] {
+		case "Weapon":
+			damage, _ := strconv.Atoi(parts[2])
+			durability, _ := strconv.Atoi(parts[3])
+			inv.AddItem(&Weapon{
+				Name:       parts[1],
+				Damage:     damage,
+				Durability: durability,
+			})
+		case "Armor":
+			defense, _ := strconv.Atoi(parts[2])
+			weight, _ := strconv.ParseFloat(parts[3], 64)
+			inv.AddItem(&Armor{
+				Name:    parts[1],
+				Defense: defense,
+				Weight:  weight,
+			})
+		}
+	}
 }
 
 func main() {
 
 	// TODO: Создайте инвентарь и добавьте:
-	inventory := Inventory{}
+	inventory := &Inventory{}
 	// TODO: - Оружие: "Меч" (урон 10, прочность 5)
 	inventory.AddItem(&Weapon{"Меч", 10, 5})
 	// TODO: - Броню: "Щит" (защита 5, вес 4.5)
@@ -244,4 +304,15 @@ func main() {
 		fmt.Println("Щит не найден")
 	}
 	// TODO: Бонус: сделайте сохранение инвентаря в файл и загрузку инвентаря из файла
+	// Load
+	newInventory := &Inventory{}
+	f, _ := os.Open(".inventory.text")
+	newInventory.Load(f)
+	defer f.Close()
+
+	// Save
+
+	f2, _ := os.Create(".inventory.text")
+	newInventory.Save(f2)
+	defer f2.Close()
 }
