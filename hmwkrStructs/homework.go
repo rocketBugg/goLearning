@@ -45,7 +45,7 @@ func (w *Weapon) GetWeight() float64 {
 }
 
 func (w *Weapon) Serialize(writer io.Writer) {
-	fmt.Fprintf(writer, "Weapon|%s,%d,%d\n", w.Name, w.Damage, w.Durability)
+	fmt.Fprintf(writer, "Weapon|%s|%d|%d\n", w.Name, w.Damage, w.Durability)
 }
 
 func (w *Weapon) Deserialize(r io.Reader) {
