@@ -40,6 +40,10 @@ func (w *Weapon) GetWeight() float64 {
 	return float64(w.Damage * 3)
 }
 
+func (w *Weapon) Serialize(writer io.Writer) {
+	fmt.Fprintf(writer, "%s,%d,%d\n", w.Name, w.Damage, w.Durability)
+}
+
 type Armor struct {
 	Name    string
 	Defense int
