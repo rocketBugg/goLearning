@@ -1,4 +1,4 @@
-package main
+package example
 
 import (
 	"bufio"
@@ -6,6 +6,10 @@ import (
 	"io"
 	"strings"
 )
+
+type Inventory struct {
+	Items []Item
+}
 
 func SafeUse(item Item) (res string, err error) {
 	defer func() {

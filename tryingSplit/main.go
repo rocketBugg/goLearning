@@ -2,16 +2,17 @@ package main
 
 import (
 	"fmt"
+	example "main/init"
 	"math"
 	"os"
 )
 
 func main() {
-	inv := Inventory{}
+	inv := example.Inventory{}
 
-	sword := &Weapon{Name: "Меч", Damage: 10, Durability: 5}
-	healthPotion := &Potion{Name: "Лечебное", Effect: "+50 HP", Charges: 3}
-	pandoraBox := &Weapon{Name: "Ящик Пандоры", Damage: math.MaxInt, Durability: math.MaxInt}
+	sword := &example.Weapon{Name: "Меч", Damage: 10, Durability: 5}
+	healthPotion := &example.Potion{Name: "Лечебное", Effect: "+50 HP", Charges: 3}
+	pandoraBox := &example.Weapon{Name: "Ящик Пандоры", Damage: math.MaxInt, Durability: math.MaxInt}
 
 	inv.AddItem(sword)
 	inv.AddItem(healthPotion)
@@ -29,26 +30,26 @@ func main() {
 
 	// SafeUse с обработкой паники для Ящика Пандоры
 	fmt.Println("\nSafeUse Ящик Пандоры (ожидается panic):")
-	msg, err := SafeUse(pandoraBox)
+	msg, err := example.SafeUse(pandoraBox)
 	if err != nil {
 		fmt.Println("Поймана паника:", err)
 	} else {
 		fmt.Println(msg)
 	}
 
-	fmt.Println(DescribeItem(sword))
-	fmt.Println(DescribeItem(nil))
+	fmt.Println(example.DescribeItem(sword))
+	fmt.Println(example.DescribeItem(nil))
 
 	fmt.Println("\nСохраняем в файл")
 
 	file, err := os.OpenFile("homework_solved.txt", os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
-		fmt.Println(OpenFileErr)
+		fmt.Println(example.OpenFileErr)
 		return
 	}
 	inv.Save(file)
 	if err := inv.Save(file); err != nil {
-		fmt.Println(SaveFileErr)
+		fmt.Println(example.SaveFileErr)
 		return
 	}
 
@@ -63,16 +64,16 @@ func main() {
 	fmt.Fprintf(file, "Weapon||")
 
 	fmt.Println("Загружаем из файла")
-	inv = Inventory{}
+	inv = example.Inventory{}
 
 	file, err = os.Open("homework_solved.txt")
 	if err != nil {
-		fmt.Println(OpenFileErr)
+		fmt.Println(example.OpenFileErr)
 	}
 
 	inv.Load(file)
 	if err := inv.Load(file); err != nil {
-		fmt.Println(LoadFileErr)
+		fmt.Println(example.LoadFileErr)
 		return
 	}
 
@@ -81,6 +82,6 @@ func main() {
 	fmt.Println("\nИмена предметов:", names)
 
 	for _, item := range inv.Items {
-		fmt.Println(DescribeItem(item))
+		fmt.Println(example.DescribeItem(item))
 	}
 }

@@ -1,4 +1,4 @@
-package main
+package example
 
 import (
 	"fmt"
@@ -130,8 +130,4 @@ type Item interface {
 type Storable interface {
 	Serialize(w io.Writer) error
 	Deserialize(r io.Reader) error
-}
-
-type Inventory struct {
-	Items []Item
 }
